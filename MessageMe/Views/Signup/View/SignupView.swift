@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SIgnupView: View {
+struct SignupView: View {
     @StateObject var viewModel = SignupViewModel()
     var body: some View {
         VStack(spacing: 20) {
@@ -48,5 +48,5 @@ struct SIgnupView: View {
 }
 
 #Preview {
-    SIgnupView()
+    SignupView()
 }
