@@ -17,6 +17,7 @@ final class NetworkManger {
     
     private init(){}
     
+    // Signup network call
     func signup(user: Signup) async throws -> SignupResponse {
         
         guard let url = URL(string: registerURL) else {
@@ -47,5 +48,37 @@ final class NetworkManger {
         
         
         
+    }
+    
+    
+    
+    
+    func login(user: Login) async throws -> LoginResponse {
+        
+        guard let url = URL(string: loginURL) else {
+            throw MMError.invalidURL
+        }
+        
+        guard let encoded = try? JSONEncoder().encode(user) else {
+            throw MMError.invalidData
+        }
+        
+        var request = URLRequest(url: url)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpMethod = "POST"
+        
+        do {
+            
+            let (data,_) = try await URLSession.shared.upload(for: request, from: encoded)
+            
+            var decoded = JSONDecoder()
+            decoded.keyDecodingStrategy = .convertFromSnakeCase
+            let response = try decoded.decode(LoginResponse.self, from: data)
+            
+            return response
+            
+        } catch {
+            throw MMError.invalidData
+        }
     }
 }
