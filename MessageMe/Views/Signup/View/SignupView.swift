@@ -8,8 +8,7 @@
 import SwiftUI
 
 struct SIgnupView: View {
-    @State private var email = ""
-    @State private var password = ""
+    @StateObject var viewModel = SignupViewModel()
     var body: some View {
         VStack(spacing: 20) {
             Text("Sign Up")
@@ -17,22 +16,23 @@ struct SIgnupView: View {
                 .fontWeight(.semibold)
             
             
-            TextField("Email", text: $email)
+            TextField("Email", text: $viewModel.user.email)
                 .autocapitalization(.none)
                 .frame(width: 350, height: 50)
                 .padding(.horizontal, 10)
                 .background(Color.gray.opacity(0.1))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
             
-            SecureField("Password", text: $password)
+            SecureField("Password", text: $viewModel.user.password)
                 .autocapitalization(.none)
                 .frame(width: 350, height: 50)
                 .padding(.horizontal, 10)
                 .background(Color.gray.opacity(0.1))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
+            
             
             Button {
-                
+                viewModel.signup()
             } label: {
                 Text("Register")
                     .foregroundStyle(.white)
@@ -41,6 +41,8 @@ struct SIgnupView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     
             }
+            
+            Text(viewModel.response?.msg ?? "No response")
         }
     }
 }
