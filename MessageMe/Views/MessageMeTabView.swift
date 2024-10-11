@@ -8,17 +8,32 @@
 import SwiftUI
 
 struct MessageMeTabView: View {
+    
+    @EnvironmentObject var loginViewModel: LoginViewModel
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        if loginViewModel.loginResponsee?.accessToken == nil {
+            LoginView()
         }
-        .padding()
+        else {
+            TabView{
+                ChatsView()
+                    .tabItem{Label("Chats", systemImage: "bolt.horizontal")}
+                    .onAppear {
+                        print(loginViewModel.loginResponsee?.accessToken ?? "no token")
+                    }
+                
+                ProfileView()
+                    .tabItem {
+                        Label("Profile", systemImage: "person")
+                    }
+            }
+        }
+        
     }
 }
 
 #Preview {
     MessageMeTabView()
+        .environmentObject(LoginViewModel())
 }
