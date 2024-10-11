@@ -8,13 +8,15 @@
 import Foundation
 
 struct Login: Codable {
+    
     var email: String = ""
     var password: String = ""
+    
 }
 
-struct LoginResponseq: Codable {
-    var accessToken: String?
-    var msg: String?
-    var user_id: String?
-    var error: String?
+struct LoginResponse: Codable {
+    let accessToken: String?
+    let msg: String?
+    let user_id: String?
+    let error: String?
 }
