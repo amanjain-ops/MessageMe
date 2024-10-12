@@ -10,10 +10,14 @@ import Foundation
 final class NetworkManger {
     static let shared = NetworkManger()
     
-    static let baseURL = "http://127.0.0.1:5000/auth/"
-    private let registerURL = baseURL + "register"
-    private let loginURL = baseURL + "login"
-    private let chatURL = baseURL + "chats"
+    private var loginViewModel: LoginViewModel?
+    
+    static let baseAuthURL = "http://127.0.0.1:5000/auth/"
+    static let baseChatURL = "http://127.0.0.1:5000/chats/"
+    static let baseUserURL = "http://127.0.0.1:5000/users/"
+    private let registerURL = baseAuthURL + "register"
+    private let loginURL = baseAuthURL + "login"
+    private let getChatsURL = baseChatURL + "chatlist"
     
     private init(){}
     
@@ -71,12 +75,38 @@ final class NetworkManger {
             
             let (data,_) = try await URLSession.shared.upload(for: request, from: encoded)
             
-            var decoded = JSONDecoder()
+            let decoded = JSONDecoder()
             decoded.keyDecodingStrategy = .convertFromSnakeCase
             let response = try decoded.decode(LoginResponse.self, from: data)
             
             return response
             
+        } catch {
+            throw MMError.invalidData
+        }
+    }
+    
+    
+    func getChats(with viewModel: LoginViewModel) async throws -> [Chats] {
+        guard let url = URL(string: getChatsURL) else{
+            throw MMError.invalidURL
+        }
+        
+        guard let accessToken = viewModel.loginResponsee?.accessToken else {
+            print("Access token is not available")
+            throw MMError.invalidData
+        }
+        
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        
+        do {
+            let (data,_) = try await URLSession.shared.data(for: request)
+            
+            let decoder = JSONDecoder()
+            decoder.keyDecodingStrategy = .convertFromSnakeCase
+            let chats = try decoder.decode([Chats].self, from: data)
+            return chats
         } catch {
             throw MMError.invalidData
         }
