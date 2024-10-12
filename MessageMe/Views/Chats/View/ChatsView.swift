@@ -10,6 +10,7 @@ import SwiftUI
 struct ChatsView: View {
     
     @EnvironmentObject var loginViewModel: LoginViewModel
+    @StateObject var viewModel = ChatsViewModel()
     
     var body: some View {
         ScrollView {
@@ -20,6 +21,23 @@ struct ChatsView: View {
             }
         }
         .navigationTitle("MessageMe")
+        .safeAreaInset(edge: .bottom, alignment: .trailing){
+            ZStack{
+                Circle()
+                    .fill(.accent)
+                    .frame(width: 60, height: 60)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 20)
+                    .onTapGesture {
+                        print("jjj")
+                    }
+                
+                Image(systemName: "plus")
+                    .font(.system(size: 20))
+                    .fontWeight(.bold)
+                    .foregroundStyle(.white)
+            }
+        }
     }
 }
 
