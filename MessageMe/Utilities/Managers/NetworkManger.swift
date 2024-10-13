@@ -19,7 +19,7 @@ final class NetworkManger {
     private let loginURL = baseAuthURL + "login"
     private let getChatsURL = baseChatURL + "chatlist"
     private let getUserListURL = baseUserURL + "userlist"
-    private let getMessagesURL = baseChatURL + "messages"
+    private let getMessagesURL = baseChatURL + "messagelist"
     
     private init(){}
     
@@ -145,7 +145,7 @@ final class NetworkManger {
     
     
     
-    func getMessages(with viewModel: LoginViewModel, chatId: String) async throws -> [Messages] {
+    func getMessages(with viewModel: LoginViewModel, chatId: ChatId) async throws -> [Messages] {
         
         guard let url = URL(string: getMessagesURL) else {
             throw MMError.invalidURL
@@ -156,20 +156,31 @@ final class NetworkManger {
             throw MMError.invalidData
         }
         
-        guard let data = try? JSONEncoder().encode(chatId) else {
+        guard let encoder = try? JSONEncoder().encode(chatId) else {
             throw MMError.invalidData
         }
         
         var request = URLRequest(url: url)
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpMethod = "POST"
-        
+        print("calling network call")
         do {
-            let (data,_) = try await URLSession.shared.upload(for: request, from: data)
-            let response = try JSONDecoder().decode([Messages].self, from: data)
+            let (data,_) = try await URLSession.shared.upload(for: request, from: encoder)
+            print("data", data)
+            let decoder = JSONDecoder()
+            
+            decoder.keyDecodingStrategy = .convertFromSnakeCase
+            let response = try decoder.decode([Messages].self, from: data)
+            print("response", response)
             return response
         } catch {
             throw MMError.invalidData
         }
     }
+}
+
+
+struct msg: Codable {
+    var msg: String
 }
