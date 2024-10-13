@@ -13,29 +13,41 @@ struct ChatsView: View {
     @StateObject var viewModel = ChatsViewModel()
     
     var body: some View {
-        ScrollView {
-            LazyVStack{
-                ForEach(0..<50) {_ in
-                    ChatCardView()
+        if loginViewModel.loginResponsee?.accessToken == nil {
+            LoginView()
+        }
+        
+        else {
+            ScrollView {
+                LazyVStack{
+                    ForEach(viewModel.chats, id: \.id) { chat in
+                        ChatCardView(chat: chat)
+                    }
                 }
             }
-        }
-        .navigationTitle("MessageMe")
-        .safeAreaInset(edge: .bottom, alignment: .trailing){
-            ZStack{
-                Circle()
-                    .fill(.accent)
-                    .frame(width: 60, height: 60)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 20)
-                    .onTapGesture {
-                        print("jjj")
-                    }
+            .task {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+                    viewModel.getChatList(with: loginViewModel)
+                }
                 
-                Image(systemName: "plus")
-                    .font(.system(size: 20))
-                    .fontWeight(.bold)
-                    .foregroundStyle(.white)
+            }
+            .navigationTitle("MessageMe")
+            .safeAreaInset(edge: .bottom, alignment: .trailing){
+                ZStack{
+                    Circle()
+                        .fill(.accent)
+                        .frame(width: 60, height: 60)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 20)
+                        .onTapGesture {
+                            print("jjj")
+                        }
+                    
+                    Image(systemName: "plus")
+                        .font(.system(size: 20))
+                        .fontWeight(.bold)
+                        .foregroundStyle(.white)
+                }
             }
         }
     }
@@ -48,6 +60,7 @@ struct ChatsView: View {
 
 
 struct ChatCardView: View {
+    var chat: Chats
     var body: some View {
         HStack(alignment: .center, spacing: 15) {
             
@@ -57,23 +70,25 @@ struct ChatCardView: View {
             
             // name and last message
             VStack (alignment: .leading, spacing: 5){
-                Text("John")
+                Text(chat.participants[1])
                     .fontWeight(.semibold)
                 
-                Text("Last Message to shown b sy t medfdfdsfr")
+                Text(chat.lastMessage?.message ?? "")
                     .lineLimit(1)
             }
             
             // time and msg count
             VStack(alignment: .trailing, spacing: 6){
                 
-                Text(String(describing: Date.now.formatted(
+                Text(String(describing: chat.lastMessage?.sentAt
+                    .formatted(
                     .dateTime
                         .hour(
                             // am/pm will not show
                             .twoDigits(amPM: .omitted))
                         .minute()
-                )))
+                )
+                ))
                 .foregroundStyle(.accent)
                 .font(.footnote)
                 .bold()
