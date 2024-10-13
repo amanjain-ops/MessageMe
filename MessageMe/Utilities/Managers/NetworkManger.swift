@@ -18,7 +18,8 @@ final class NetworkManger {
     private let registerURL = baseAuthURL + "register"
     private let loginURL = baseAuthURL + "login"
     private let getChatsURL = baseChatURL + "chatlist"
-    private let getUsersURL = baseUserURL + "userlist"
+    private let getUserListURL = baseUserURL + "userlist"
+    
     
     private init(){}
     
@@ -115,9 +116,9 @@ final class NetworkManger {
     
     
     
-    func getUsers(with viewModel: LoginViewModel) async throws -> Profile {
+    func getUsers(with viewModel: LoginViewModel) async throws -> [Profile] {
         
-        guard let url = URL(string: getUsersURL) else{
+        guard let url = URL(string: getUserListURL) else{
             throw MMError.invalidURL
         }
         
@@ -132,8 +133,10 @@ final class NetworkManger {
         do {
             let (data,_) = try await URLSession.shared.data(for: request)
             let decoder = JSONDecoder()
+            
             decoder.keyDecodingStrategy = .convertFromSnakeCase
-            let profile = try decoder.decode(Profile.self, from: data)
+            let profile = try decoder.decode([Profile].self, from: data)
+            
             return profile
         }catch {
             throw MMError.invalidData
