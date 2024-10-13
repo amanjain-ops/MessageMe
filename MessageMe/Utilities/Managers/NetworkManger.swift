@@ -19,7 +19,7 @@ final class NetworkManger {
     private let loginURL = baseAuthURL + "login"
     private let getChatsURL = baseChatURL + "chatlist"
     private let getUserListURL = baseUserURL + "userlist"
-    
+    private let getMessagesURL = baseChatURL + "messages"
     
     private init(){}
     
@@ -139,6 +139,36 @@ final class NetworkManger {
             
             return profile
         }catch {
+            throw MMError.invalidData
+        }
+    }
+    
+    
+    
+    func getMessages(with viewModel: LoginViewModel, chatId: String) async throws -> [Messages] {
+        
+        guard let url = URL(string: getMessagesURL) else {
+            throw MMError.invalidURL
+        }
+        
+        guard let accessToken = viewModel.loginResponsee?.accessToken else {
+            print("Access token is not available")
+            throw MMError.invalidData
+        }
+        
+        guard let data = try? JSONEncoder().encode(chatId) else {
+            throw MMError.invalidData
+        }
+        
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.httpMethod = "POST"
+        
+        do {
+            let (data,_) = try await URLSession.shared.upload(for: request, from: data)
+            let response = try JSONDecoder().decode([Messages].self, from: data)
+            return response
+        } catch {
             throw MMError.invalidData
         }
     }
