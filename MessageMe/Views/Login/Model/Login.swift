@@ -17,6 +17,6 @@ struct Login: Codable {
 struct LoginResponse: Codable {
     var accessToken: String?
     let msg: String?
-    let user_id: String?
+    let userId: String?
     let error: String?
 }
