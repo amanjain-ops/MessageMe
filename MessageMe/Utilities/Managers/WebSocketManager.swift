@@ -17,7 +17,7 @@ class WebSocketManager: ObservableObject {
     @Published var newMessage: String = ""
     private var loginViewModel: LoginViewModel?
     @Published var chatCreatedResponse: Chats?
-    
+    @Published var chatss: [Chats] = []
     // Initialize without any parameters
     init() {
     }
@@ -66,8 +66,9 @@ class WebSocketManager: ObservableObject {
                 let decoder = JSONDecoder()
                 decoder.keyDecodingStrategy = .convertFromSnakeCase
                 
+                
+                
                 do {
-                    
                     let response = try decoder.decode([Messages].self, from: jsonData)
                     
                     //                    print(response)
@@ -84,6 +85,32 @@ class WebSocketManager: ObservableObject {
             }
         }
         
+        // chats updation
+        socket.on("last_message") { data, _ in
+            if let firstElement = data.first as? [String: Any] {
+                do {
+                    // Convert the first element into JSON data
+                    let jsonData = try JSONSerialization.data(withJSONObject: firstElement, options: [])
+                    
+                    // Decode the JSON data
+                    let decoder = JSONDecoder()
+                    decoder.keyDecodingStrategy = .convertFromSnakeCase
+                    
+                    let response = try decoder.decode(Chats.self, from: jsonData)
+                    
+                    print("Response:", response)
+                    
+                    DispatchQueue.main.async {
+                        self.updateChatMessages(response: response)
+//                        print("fter chat append: ", self.chatss)
+                    }
+                } catch {
+                    print("Error decoding JSON: \(error)")
+                }
+            } else {
+                print("Invalid data format")
+            }
+        }
         
         
         socket.on("chat_created") { data, _  in
@@ -104,6 +131,7 @@ class WebSocketManager: ObservableObject {
                     
                     DispatchQueue.main.async {
                         self.chatCreatedResponse = response
+                        
                     }
                 } catch {
                     print("Error decoding JSON: \(error)")
@@ -126,20 +154,57 @@ class WebSocketManager: ObservableObject {
         }
     }
     
-    func joinChat() {
-        socket.emit("join_chat", ["chat_id": chatCreatedResponse?.id])
+    func joinChat(chatId: String) {
+        
+        socket.emit("join_chat", ["chat_id": chatId])
     }
     
-    func sendMessage() {
+    // Call this function for each chat the user is in
+    func joinAllChats(chatIds: [Chats]) {
+        for chat in chatIds {
+            joinChat(chatId: chat.id)
+        }
+    }
+    func sendMessage(chatId: String) {
         socket.emit("sendMessage", [
-            "chat_id": chatCreatedResponse?.id,
+            "chat_id": chatId,
             "message": self.newMessage
         ])
     }
+    
+    
+    func updateChatMessages(response: Chats) {
+        // Find the chat by chatId and append the message to the correct chat
+        
+        print("existing value in chats: ", self.chatss)
+        print("updating msgs")
+        
+        if let index = self.chatss.firstIndex(where: { $0.id == response.id }) {
+//            print("response id: \(response.id), chat id: \(self.chatss[index].id)")
+//            DispatchQueue.main.async {
+                self.chatss[index].lastMessage = response.lastMessage
+//            }
+            
+        }
+        else {
+            print("else matters")
+//            DispatchQueue.main.async {
+                self.chatss.append(response)
+//                print("cjjj: ", self.chatss)
+//            }
+        }
+    }
+    
     
     func chatCreate(recipentId: String) {
         socket.emit("chatCreate", [
             "recipient_id": recipentId
         ])
     }
+    
+    
+    
+    
+    
+   
 }
