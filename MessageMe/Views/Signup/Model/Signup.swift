@@ -11,6 +11,7 @@ import Foundation
 struct Signup: Codable {
     var email: String = ""
     var password: String = ""
+    var name: String = ""
 }
 
 
