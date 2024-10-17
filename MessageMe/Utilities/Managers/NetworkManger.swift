@@ -24,7 +24,7 @@ final class NetworkManger {
     private init(){}
     
     // Signup network call
-    func signup(user: Signup) async throws -> SignupResponse {
+    func signup(user: Signup) async throws -> (SignupResponse, HTTPURLResponse) {
         
         guard let url = URL(string: registerURL) else {
             throw MMError.invalidURL
@@ -40,13 +40,17 @@ final class NetworkManger {
         
         do {
             
-            let (data,_) = try await URLSession.shared.upload(for: request, from: encoded)
+            let (data,httpResponse) = try await URLSession.shared.upload(for: request, from: encoded)
+            
+            guard let httpRespons = httpResponse as? HTTPURLResponse  else {
+                throw MMError.invalidResponse
+            }
             
             let decoder = JSONDecoder()
             decoder.keyDecodingStrategy = .convertFromSnakeCase
             let response = try decoder.decode(SignupResponse.self, from: data)
             print(response)
-            return response
+            return (response , httpRespons)
             
         } catch {
             throw MMError.invalidData
@@ -167,20 +171,13 @@ final class NetworkManger {
         print("calling network call")
         do {
             let (data,_) = try await URLSession.shared.upload(for: request, from: encoder)
-            print("data", data)
             let decoder = JSONDecoder()
             
             decoder.keyDecodingStrategy = .convertFromSnakeCase
             let response = try decoder.decode([Messages].self, from: data)
-            print("response", response)
             return response
         } catch {
             throw MMError.invalidData
         }
     }
-}
-
-
-struct msg: Codable {
-    var msg: String
 }
