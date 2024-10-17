@@ -9,6 +9,10 @@ import SwiftUI
 
 struct LoginView: View {
     @EnvironmentObject var viewModel: LoginViewModel
+    @FocusState private var focusedTextField: FormTextField?
+    enum FormTextField {
+        case email, password
+    }
     var body: some View {
         NavigationStack() {
             VStack(spacing: 20) {
@@ -17,21 +21,34 @@ struct LoginView: View {
                     .fontWeight(.semibold)
                 
                 
-                TextField("Email", text: $viewModel.loginUser.email)
-                    .keyboardType(.emailAddress)
-                    .autocapitalization(.none)
-                    .frame(width: 350, height: 50)
-                    .padding(.horizontal, 10)
-                    .background(Color.gray.opacity(0.1))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                
-                SecureField("Password", text: $viewModel.loginUser.password)
-                    .autocapitalization(.none)
-                    .frame(width: 350, height: 50)
-                    .padding(.horizontal, 10)
-                    .background(Color.gray.opacity(0.1))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                
+                VStack(alignment: .leading, spacing: 20){
+                    TextField("Email", text: $viewModel.loginUser.email)
+                        .keyboardType(.emailAddress)
+                        .autocapitalization(.none)
+                        .frame(width: 350, height: 50)
+                        .padding(.horizontal, 10)
+                        .background(Color.gray.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .focused($focusedTextField, equals: .email)
+                        .onSubmit { focusedTextField = .password }
+                        .submitLabel(.next)
+                    
+                    SecureField("Password", text: $viewModel.loginUser.password)
+                        .autocapitalization(.none)
+                        .frame(width: 350, height: 50)
+                        .padding(.horizontal, 10)
+                        .background(Color.gray.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .focused($focusedTextField, equals: .password)
+                        .onSubmit { focusedTextField = nil }
+                        .submitLabel(.continue)
+                    
+                    if !viewModel.errorMessage.isEmpty {
+                        Text(viewModel.errorMessage)
+                            .foregroundStyle(.red)
+                            .font(.caption)
+                    }
+                }
                 
                 Button {
                     viewModel.login()
