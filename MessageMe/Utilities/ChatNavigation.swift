@@ -6,3 +6,9 @@
 //
 
 import Foundation
+
+
+enum ChatNavigation: Hashable {
+    case newChat
+    case chatDetail(chatId: String)
+}
