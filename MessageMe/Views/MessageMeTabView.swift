@@ -10,30 +10,33 @@ import SwiftUI
 struct MessageMeTabView: View {
     
     @EnvironmentObject var loginViewModel: LoginViewModel
-    
+    @State private var path = NavigationPath()
     var body: some View {
-        if loginViewModel.loginResponsee?.accessToken == nil {
-            LoginView()
-        }
-        else {
-            TabView{
-                ChatsView()
-                    .tabItem{Label("Chats", systemImage: "bolt.horizontal")}
-                    .onAppear {
-                        print(loginViewModel.loginResponsee?.accessToken ?? "no token")
+        
+        NavigationStack {
+            Group{
+                if loginViewModel.loginResponsee?.accessToken == nil {
+                    LoginView()
+                }
+                else {
+                    TabView{
+                        
+                        ChatsView(path: $path)
+                            .tabItem{Label("Chats", systemImage: "bolt.horizontal")}
+                        
+                        ProfileView()
+                            .tabItem {
+                                Label("Profile", systemImage: "person")
+                            }
                     }
-                
-                ProfileView()
-                    .tabItem {
-                        Label("Profile", systemImage: "person")
-                    }
+                }
             }
         }
-        
     }
 }
 
 #Preview {
     MessageMeTabView()
         .environmentObject(LoginViewModel())
+        .environmentObject(WebSocketManager())
 }
