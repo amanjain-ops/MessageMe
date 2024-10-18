@@ -11,11 +11,13 @@ import SwiftUI
 struct MessageMeApp: App {
     
     @StateObject var loginUser = LoginViewModel()
+    @StateObject var webSocketManager = WebSocketManager()
     
     var body: some Scene {
         WindowGroup {
             MessageMeTabView()
                 .environmentObject(loginUser)
+                .environmentObject(webSocketManager)
         }
     }
 }
