@@ -8,16 +8,17 @@
 import Foundation
 
 
-struct Chats: Codable, Identifiable {
+struct Chats: Codable, Identifiable, Hashable {
     let msg: String?
-    let id: String
+    var id: String
     let participants: [String]
     let createdAt: String?
-    let lastMessage: LastMessage?
+    var lastMessage: LastMessage?
+    var otherParticipantName:String?
 }
 
-struct LastMessage: Codable {
+struct LastMessage: Codable, Hashable {
     let message: String
     let senderId: String
-    let sentAt: Date
+    let sentAt: String
 }
