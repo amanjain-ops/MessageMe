@@ -10,12 +10,11 @@ import Foundation
 
 class ChatDetailViewModel: ObservableObject {
     @Published var messages: [Messages] = []
-    @Published var isLoading = false
+    @Published var isLoading = true
     @Published var chatId = ChatId()
     
     func getMessages(with viewModel: LoginViewModel) {
         Task {@MainActor in
-            isLoading = true
             print(isLoading)
             do {
                 print(chatId.chatId)
