@@ -33,19 +33,18 @@ struct ChatsView: View {
                     else {
                         ScrollView {
                             LazyVStack(alignment: .leading){
-                                ForEach(viewModel.chats) { chat in
+                                ForEach(viewModel.chats.indices, id: \.self) { index in
                                     
-                                    NavigationLink(value: chat) {
+                                    NavigationLink(value: viewModel.chats[index]) {
                                         
-                                        if let index = webSocketMg.chatss.firstIndex(where: { $0.id == chat.id}) {
-                                            ChatCardView(chat: webSocketMg.chatss[index], loginViewModel: loginViewModel)
-                                        }else {
-                                            ChatCardView(chat: chat, loginViewModel: loginViewModel)
-                                                .onAppear {
-                                                    print(chat)
-                                                    print("user id:  \(String(describing: loginViewModel.loginResponsee?.userId))")
+                                        ChatCardView(chat: viewModel.chats[index], loginViewModel: loginViewModel)
+                                            .onChange(of: webSocketMg.chatss) { oldValue, newValue in
+                                                
+                                                if let ind = webSocketMg.chatss.firstIndex(where: { $0.id == viewModel.chats[index].id}) {
+                                                    
+                                                    viewModel.chats[index].lastMessage = webSocketMg.chatss[ind].lastMessage
                                                 }
-                                        }
+                                            }
                                     }
                                 }
                             }
@@ -69,16 +68,15 @@ struct ChatsView: View {
                 }
                 .navigationTitle("MessageME")
                 .navigationDestination(for: Chats.self) { chat in
-                    ChatDetailView(chatId: chat.id, path: $path)
-                    
+                    ChatDetailView(chatId: chat.id, otherUser: chat.otherParticipantName, path: $path)
                 }
                 .navigationDestination(for: ChatNavigation.self) { val in
                     switch val {
                     case .newChat:
                         NewChatView(path: $path)
                         
-                    case .chatDetail(let chatId):
-                        ChatDetailView(chatId: chatId, path: $path)
+                    case .chatDetail(let chatId, let user):
+                        ChatDetailView(chatId: chatId, otherUser: user, path: $path)
                     }
                     
                 }
@@ -103,8 +101,6 @@ struct ChatCardView: View {
         HStack(alignment: .center, spacing: 15) {
             
             // profile pic
-            //            Circle()
-            //                .frame(width: 60)
             Image(systemName: "person.crop.circle.fill")
                 .resizable()
                 .scaledToFit()
@@ -114,7 +110,7 @@ struct ChatCardView: View {
             // name and last message
             VStack (alignment: .leading, spacing: 5){
                 
-                Text(chat.otherParticipantName ?? "")
+                Text(chat.otherParticipantName?.profileName ?? "")
                     .fontWeight(.semibold)
                     .lineLimit(1)
                 
@@ -149,14 +145,8 @@ struct ChatCardView: View {
                     .background(.accent)
                     .clipShape(Circle())
             }
-            
-            
-            
         }
         .padding()
-        
-        
-        
     }
 }
 
