@@ -13,67 +13,57 @@ struct ChatDetailView: View {
     @EnvironmentObject var webSocketManager: WebSocketManager
     @StateObject var viewModel = ChatDetailViewModel()
     var chatId: String
+    var otherUser: Profile?
     @State private var hasLoadMessage: Bool = false
     @Binding var path: NavigationPath
     
     var body: some View {
         ScrollView {
-            
-            if !webSocketManager.messages.isEmpty {
-                
-                ForEach(webSocketManager.messages) { message in
-                    if message.chatId == chatId {
-                        VStack{
-                            VStack(alignment: .leading){
-                                Text(message.message)
-                                    .padding(.horizontal, 5)
+            if viewModel.isLoading {
+                ProgressView()
+                    .onAppear{
+                        Task{
+                            print("hasLoadMessage: \(hasLoadMessage)")
+                            if !hasLoadMessage {
                                 
-                                HStack{
-                                    Spacer()
-                                    Text(StringToDate(strDate: message.sentAt))
-                                        .font(.caption)
-                                }
-                                .padding(.trailing, 3)
-                            }
-                            .frame(minWidth: 50, maxWidth: 250)
-                            .background(Color.cyan)
-                            .clipShape(RoundedRectangle(cornerRadius: 5))
-                            .padding(.vertical, (message.senderId == loginViewModel.loginResponsee?.userId) ? 0: 5)
+                                viewModel.chatId.chatId = chatId
+                                
+                                viewModel.getMessages(with: loginViewModel)
+                                hasLoadMessage = true
+                                
+                                webSocketManager.joinChat(chatId: chatId)
+                            } // if
                             
-                        }
-                        .frame(width: 400, alignment: (message.senderId == loginViewModel.loginResponsee?.userId) ? .trailing: .leading)
-                    } // if
-                    
-                    
-                } //ForEach
-                
-            } // if
+                        } // task
+                    } // onAppear
+            }
             else {
-                VStack{
-                    ProgressView()
-                        .onAppear{
-                            Task{
-                                print("hasLoadMessage: \(hasLoadMessage)")
-                                if !hasLoadMessage {
-                                    
-                                    viewModel.chatId.chatId = chatId
-                                    
-                                    viewModel.getMessages(with: loginViewModel)
-                                    hasLoadMessage = true
-                                    
-                                    webSocketManager.joinChat(chatId: chatId)
-                                    
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                        webSocketManager.messages = viewModel.messages
-                                    }
-                                    
-                                } // if
-                                
-                            } // task
-                        } // onAppear
+                if viewModel.messages.isEmpty {
+                    VStack {
+                    }
+                }else {
+                    ForEach(viewModel.messages.indices, id: \.self) { index in
+                        if index >= 1 {
+                            ChatBubble(message: viewModel.messages[index], previousMessage: viewModel.messages[index-1], userId: (loginViewModel.loginResponsee?.userId)!)
+                        } else {
+                            ChatBubble(message: viewModel.messages[index], userId: (loginViewModel.loginResponsee?.userId)!)
+                        }
+                        
+                    }
+                }
+               
+                ForEach(webSocketManager.messages.indices, id: \.self) { ind in
+//                    if webSocketManager.messages[ind].chatId == chatId {
+                    if ind >= 1{
+                        ChatBubble(message: webSocketManager.messages[ind], previousMessage: webSocketManager.messages[ind-1], userId: (loginViewModel.loginResponsee?.userId)!)
+                    }
+                    else{
+                        ChatBubble(message: webSocketManager.messages[ind], previousMessage: viewModel.messages.last, userId: (loginViewModel.loginResponsee?.userId)!)
+                    }
+//                    }
                     
-                } // vstack
-            } // else
+                }
+            }
             
         } // scrollview
         .onDisappear {
@@ -83,33 +73,67 @@ struct ChatDetailView: View {
         .defaultScrollAnchor(.bottom)
         .frame(width: 400)
         .toolbar(.hidden, for: .tabBar)
-        
+        .navigationBarBackButtonHidden()
         .safeAreaInset(edge: .bottom, alignment: .center) {
             
-            HStack{
-                TextEditor(text: $webSocketManager.newMessage)
-                    .frame(height: 30)
-                    .padding(.vertical, 7)
-                    .padding(.leading, 20)
-                    .padding(.bottom, 7)
-                
-                Button {
-                    webSocketManager.sendMessage(chatId: chatId)
-                    webSocketManager.newMessage = ""
-                } label: {
-                    Image(systemName: "triangle.circle.fill")
-                        .resizable()
-                        .frame(width: 50, height: 50)
-                        .rotationEffect(.degrees(90))
-                }// label
-            } // hstack
-            .padding()
+            VStack {
+                HStack{
+                    TextField("Message", text: $webSocketManager.newMessage, axis: .vertical)
+                        .lineLimit(5)
+                        .padding(.vertical, 7)
+                        .padding(.leading, 20)
+                        .padding(.bottom, 7)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(Color.gray, lineWidth: 1)
+                        }
+
+                    
+                    Button {
+                        webSocketManager.sendMessage(chatId: chatId)
+                        webSocketManager.newMessage = ""
+                    } label: {
+                        Image(systemName: "triangle.circle.fill")
+                            .resizable()
+                            .frame(width: 50, height: 50)
+                            .rotationEffect(.degrees(90))
+                    }// label
+                } // hstack
+                .padding(.horizontal, 5)
+                .padding(.top, 5)
+            }
+            .background(Color.white)
         } //safeAreaInset
+        
+        .safeAreaInset(edge: .top) {
+            //            ToolbarItem(placement: .topBarLeading){
+            HStack{
+                Button(action: {
+                    path.removeLast()
+                }) {
+                    Image(systemName: "chevron.left")
+                        .bold()
+                }
+                //            }
+                
+                //            ToolbarItem(placement: .principal) {
+                UserCardView(user: otherUser!, width: 40)
+                    .padding(5)
+                //            }
+            }
+            .padding(.horizontal, 4)
+//            .background(Color.gray.mix(with: .pin, by: 0.2))
+            .background(Color.white)
+            
+            
+            
+        }
+        
     }
 }
 
 #Preview {
-    ChatDetailView(chatId: "", path: .constant(NavigationPath()))
+    ChatDetailView(chatId: "670903f421efb36287072a9d", otherUser: Profile(id: "12345", email: "sdg", profileName: "sss", profilePicUrl: ""), path: .constant(NavigationPath()))
         .environmentObject(LoginViewModel())
         .environmentObject(WebSocketManager())
 }
@@ -136,5 +160,32 @@ func StringToDate(strDate: String) -> String {
     } else {
         print("Invalid date string")
         return ""
+    }
+}
+
+struct ChatBubble: View {
+    var message: Messages
+    var previousMessage: Messages?
+    var userId: String
+    var body: some View {
+        VStack{
+            VStack(alignment: .leading){
+                Text(message.message)
+                    .padding(.horizontal, 5)
+                
+                HStack{
+                    Spacer()
+                    Text(StringToDate(strDate: message.sentAt))
+                        .font(.caption)
+                }
+                .padding(.trailing, 3)
+            }
+            .frame(minWidth: 50, maxWidth: 250)
+            .background(Color.cyan)
+            .clipShape(RoundedRectangle(cornerRadius: 5))
+            .padding(.top, (message.senderId == previousMessage?.senderId) ? 0: 5)
+            
+        }
+        .frame(width: 400, alignment: (message.senderId == userId) ? .trailing: .leading)
     }
 }
