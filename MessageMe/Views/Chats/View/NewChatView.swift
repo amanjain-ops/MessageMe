@@ -29,28 +29,25 @@ struct NewChatView: View {
                 
                 ForEach(viewModel.userList) { user in
                     UserCardView(user: user)
+                        .padding()
+                        .background(Color.white)
                         .onTapGesture {
                             do {
                                 webSocketManager.chatCreate(recipentId: user.id)
                                 print("chatId: \(String(describing: webSocketManager.chatCreatedResponse?.id))")
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                    if let id = webSocketManager.chatCreatedResponse?.id {
+                                        
+                                        chatId = id
+                                        path.removeLast()
+                                        path.append(ChatNavigation.chatDetail(chatId: chatId, user: user))
+                                    }else {
+                                        print("no navigation")
+                                    }
+                                }
                             }
                         }
                 }
-                .onChange(of: webSocketManager.chatCreatedResponse?.id) { oldValue, newValue in
-                    print("chatId: \(String(describing: newValue))")
-                    
-                    if let id = newValue {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                            chatId = id
-                            path.removeLast()
-                            path.append(ChatNavigation.chatDetail(chatId: chatId))
-                        }
-                    } else {
-                        print("no navigation")
-                    }
-                }
-                
-                
             }
             
         }
@@ -65,6 +62,7 @@ struct NewChatView: View {
 
 struct UserCardView: View {
     var user: Profile
+    var width: CGFloat?
     var body: some View {
         HStack(alignment: .center, spacing: 15) {
             
@@ -74,7 +72,7 @@ struct UserCardView: View {
             Image(systemName: "person.crop.circle.fill")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 60)
+                .frame(width: width ?? 60)
                 .foregroundStyle(.gray)
             
             // name and last message
@@ -84,7 +82,8 @@ struct UserCardView: View {
             }
             Spacer()
         }
-        .padding()
+        //        .padding()
+        
         
     }
 }
