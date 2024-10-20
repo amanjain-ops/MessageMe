@@ -14,7 +14,7 @@ struct Chats: Codable, Identifiable, Hashable {
     let participants: [String]
     let createdAt: String?
     var lastMessage: LastMessage?
-    var otherParticipantName:String?
+    var otherParticipantName: Profile?
 }
 
 struct LastMessage: Codable, Hashable {
