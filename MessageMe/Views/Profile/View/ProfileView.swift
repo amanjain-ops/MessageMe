@@ -45,6 +45,7 @@ struct ProfileView: View {
                 }
                 Spacer()
             }
+            .background(Color.secondaryColor)
             .onAppear {
                 viewModel.fetchProfile(with: loginViewModel)
             }
@@ -84,7 +85,7 @@ struct ProfileCardView: View {
                     .foregroundStyle(.gray)
                 
                 Text(name)
-                    .foregroundStyle(.black)
+                    .foregroundStyle(Color.textColor)
             }
             
             Spacer()

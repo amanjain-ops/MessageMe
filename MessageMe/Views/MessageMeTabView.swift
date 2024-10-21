@@ -29,6 +29,8 @@ struct MessageMeTabView: View {
                                 Label("Profile", systemImage: "person")
                             }
                     }
+                    .accentColor(Color.primaryColor)
+                    .background(Color.secondaryColor)
                 }
             }
         }

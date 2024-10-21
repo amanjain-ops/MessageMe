@@ -30,7 +30,7 @@ struct NewChatView: View {
                 ForEach(viewModel.userList) { user in
                     UserCardView(user: user)
                         .padding()
-                        .background(Color.white)
+//                        .background(Color.white)
                         .onTapGesture {
                             do {
                                 webSocketManager.chatCreate(recipentId: user.id)
@@ -48,9 +48,11 @@ struct NewChatView: View {
                             }
                         }
                 }
+                .navigationTitle("New Chat")
             }
             
         }
+        .background(Color.secondaryColor)
     }
 }
 
@@ -79,6 +81,7 @@ struct UserCardView: View {
             VStack (alignment: .leading, spacing: 5){
                 Text(user.profileName ?? "")
                     .fontWeight(.semibold)
+                    .foregroundStyle(Color.textColor)
             }
             Spacer()
         }

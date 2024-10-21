@@ -16,67 +16,92 @@ struct SignupView: View {
     }
     
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Sign Up")
-                .font(.title)
-                .fontWeight(.semibold)
-            
-            VStack(alignment: .leading, spacing: 20){
-                TextField("Name", text: $viewModel.user.name)
-                    .autocapitalization(.none)
-                    .autocorrectionDisabled()
-                    .focused($focusedTextField, equals: .name)
-                    .onSubmit { focusedTextField = .email }
-                    .submitLabel(.next)
-                    .frame(width: 350, height: 50)
-                    .padding(.horizontal, 10)
-                    .background(Color.gray.opacity(0.1))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+        ZStack {
+//            LinearGradient(colors: [Color.primaryColor, Color.secondaryColor], startPoint: .topLeading, endPoint: .bottomTrailing)
+            Color.secondaryColor
+                .ignoresSafeArea()
+            VStack(spacing: 20) {
+                Spacer()
+                Text("Sign Up")
+                    .font(.title)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Color.primaryColor)
                 
-                TextField("Email", text: $viewModel.user.email)
-                    .keyboardType(.emailAddress)
-                    .autocapitalization(.none)
-                    .focused($focusedTextField, equals: .email)
-                    .onSubmit { focusedTextField = .password }
-                    .submitLabel(.next)
-                    .frame(width: 350, height: 50)
-                    .padding(.horizontal, 10)
-                    .background(Color.gray.opacity(0.1))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                
-                SecureField("Password", text: $viewModel.user.password)
-                    .autocapitalization(.none)
-                    .focused($focusedTextField, equals: .password)
-                    .onSubmit { focusedTextField = nil }
-                    .submitLabel(.continue)
-                    .frame(width: 350, height: 50)
-                    .padding(.horizontal, 10)
-                    .background(Color.gray.opacity(0.1))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                if !viewModel.errorMessage.isEmpty {
-                    Text(viewModel.errorMessage)
-                        .foregroundStyle(.red)
-                        .font(.caption)
-                }
-            }
-            
-            Button {
-                viewModel.signup()
-            } label: {
-                Text("Register")
-                    .foregroundStyle(.white)
-                    .frame(width: 350, height: 50)
-                    .background(.black)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                VStack(alignment: .leading, spacing: 20){
+                    TextField("Name", text: $viewModel.user.name)
+                        .foregroundStyle(Color("TFText"))
+                        .autocapitalization(.none)
+                        .autocorrectionDisabled()
+                        .focused($focusedTextField, equals: .name)
+                        .onSubmit { focusedTextField = .email }
+                        .submitLabel(.next)
+                        .frame(width: 350, height: 50)
+                        .padding(.horizontal, 10)
+                        .background(Color("TFBackground"))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke((focusedTextField == .name) ? Color("TFOnFBorder") : Color("TFOFBorder"), lineWidth: 0.6)
+                        }
                     
+                    
+                    TextField("Email", text: $viewModel.user.email)
+                        .foregroundStyle(Color("TFText"))
+                        .keyboardType(.emailAddress)
+                        .autocapitalization(.none)
+                        .focused($focusedTextField, equals: .email)
+                        .onSubmit { focusedTextField = .password }
+                        .submitLabel(.next)
+                        .frame(width: 350, height: 50)
+                        .padding(.horizontal, 10)
+                        .background(Color("TFBackground"))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke((focusedTextField == .email) ? Color("TFOnFBorder") : Color("TFOFBorder"), lineWidth: 0.6)
+                        }
+                    
+                    SecureField("Password", text: $viewModel.user.password)
+                        .foregroundStyle(Color("TFText"))
+                        .autocapitalization(.none)
+                        .focused($focusedTextField, equals: .password)
+                        .onSubmit { focusedTextField = nil }
+                        .submitLabel(.continue)
+                        .frame(width: 350, height: 50)
+                        .padding(.horizontal, 10)
+                        .background(Color("TFBackground"))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke((focusedTextField == .password) ? Color("TFOnFBorder") : Color("TFOFBorder"), lineWidth: 0.6)
+                        }
+                    if !viewModel.errorMessage.isEmpty {
+                        Text(viewModel.errorMessage)
+                            .foregroundStyle(.red)
+                            .font(.caption)
+                    }
+                }
+                
+                Button {
+                    viewModel.signup()
+                } label: {
+                    Text("Register")
+                        .foregroundStyle(.white)
+                        .frame(width: 350, height: 50)
+                        .background(Color.primaryColor)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                    
+                }
+                
+                //            Text(viewModel.response?.msg ?? "No response")
+                Spacer()
             }
-            
-            Text(viewModel.response?.msg ?? "No response")
-        }
-        .onChange(of: viewModel.isSignupSuccessful) { old, newValue in
-            print(old)
-            if newValue {
-                dismiss()
+            .padding()
+            .onChange(of: viewModel.isSignupSuccessful) { old, newValue in
+                print(old)
+                if newValue {
+                    dismiss()
+                }
             }
         }
         

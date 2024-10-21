@@ -10,5 +10,5 @@ import Foundation
 
 enum ChatNavigation: Hashable {
     case newChat
-    case chatDetail(chatId: String)
+    case chatDetail(chatId: String,  user: Profile)
 }

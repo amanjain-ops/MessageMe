@@ -18,122 +18,128 @@ struct ChatDetailView: View {
     @Binding var path: NavigationPath
     
     var body: some View {
-        ScrollView {
-            if viewModel.isLoading {
-                ProgressView()
-                    .onAppear{
-                        Task{
-                            print("hasLoadMessage: \(hasLoadMessage)")
-                            if !hasLoadMessage {
+            ZStack{
+                Color.secondaryColor
+                    .ignoresSafeArea()
+            ScrollView {
+                
+                if viewModel.isLoading {
+                    ProgressView()
+                        .onAppear{
+                            Task{
+                                print("hasLoadMessage: \(hasLoadMessage)")
+                                if !hasLoadMessage {
+                                    
+                                    viewModel.chatId.chatId = chatId
+                                    
+                                    viewModel.getMessages(with: loginViewModel)
+                                    hasLoadMessage = true
+                                    
+                                    webSocketManager.joinChat(chatId: chatId)
+                                } // if
                                 
-                                viewModel.chatId.chatId = chatId
-                                
-                                viewModel.getMessages(with: loginViewModel)
-                                hasLoadMessage = true
-                                
-                                webSocketManager.joinChat(chatId: chatId)
-                            } // if
-                            
-                        } // task
-                    } // onAppear
-            }
-            else {
-                if viewModel.messages.isEmpty {
-                    VStack {
-                    }
-                }else {
-                    ForEach(viewModel.messages.indices, id: \.self) { index in
-                        if index >= 1 {
-                            ChatBubble(message: viewModel.messages[index], previousMessage: viewModel.messages[index-1], userId: (loginViewModel.loginResponsee?.userId)!)
-                        } else {
-                            ChatBubble(message: viewModel.messages[index], userId: (loginViewModel.loginResponsee?.userId)!)
+                            } // task
+                        } // onAppear
+                }
+                else {
+                    if viewModel.messages.isEmpty {
+                        VStack {
                         }
+                    }else {
+                        ForEach(viewModel.messages.indices, id: \.self) { index in
+                            if index >= 1 {
+                                ChatBubble(message: viewModel.messages[index], previousMessage: viewModel.messages[index-1], userId: (loginViewModel.loginResponsee?.userId)!)
+                            } else {
+                                ChatBubble(message: viewModel.messages[index], userId: (loginViewModel.loginResponsee?.userId)!)
+                            }
+                            
+                        }
+                    }
+                    
+                    ForEach(webSocketManager.messages.indices, id: \.self) { ind in
+                        //                    if webSocketManager.messages[ind].chatId == chatId {
+                        if ind >= 1{
+                            ChatBubble(message: webSocketManager.messages[ind], previousMessage: webSocketManager.messages[ind-1], userId: (loginViewModel.loginResponsee?.userId)!)
+                        }
+                        else{
+                            ChatBubble(message: webSocketManager.messages[ind], previousMessage: viewModel.messages.last, userId: (loginViewModel.loginResponsee?.userId)!)
+                        }
+                        //                    }
                         
                     }
                 }
-               
-                ForEach(webSocketManager.messages.indices, id: \.self) { ind in
-//                    if webSocketManager.messages[ind].chatId == chatId {
-                    if ind >= 1{
-                        ChatBubble(message: webSocketManager.messages[ind], previousMessage: webSocketManager.messages[ind-1], userId: (loginViewModel.loginResponsee?.userId)!)
-                    }
-                    else{
-                        ChatBubble(message: webSocketManager.messages[ind], previousMessage: viewModel.messages.last, userId: (loginViewModel.loginResponsee?.userId)!)
-                    }
-//                    }
-                    
-                }
-            }
-            
-        } // scrollview
-        .onDisappear {
-            hasLoadMessage = false
-            webSocketManager.messages = []
-        }
-        .defaultScrollAnchor(.bottom)
-        .frame(width: 400)
-        .toolbar(.hidden, for: .tabBar)
-        .navigationBarBackButtonHidden()
-        .safeAreaInset(edge: .bottom, alignment: .center) {
-            
-            VStack {
-                HStack{
-                    TextField("Message", text: $webSocketManager.newMessage, axis: .vertical)
-                        .lineLimit(5)
-                        .padding(.vertical, 7)
-                        .padding(.leading, 20)
-                        .padding(.bottom, 7)
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color.gray, lineWidth: 1)
-                        }
-
-                    
-                    Button {
-                        webSocketManager.sendMessage(chatId: chatId)
-                        webSocketManager.newMessage = ""
-                    } label: {
-                        Image(systemName: "triangle.circle.fill")
-                            .resizable()
-                            .frame(width: 50, height: 50)
-                            .rotationEffect(.degrees(90))
-                    }// label
-                } // hstack
-                .padding(.horizontal, 5)
-                .padding(.top, 5)
-            }
-            .background(Color.white)
-        } //safeAreaInset
-        
-        .safeAreaInset(edge: .top) {
-            //            ToolbarItem(placement: .topBarLeading){
-            HStack{
-                Button(action: {
-                    path.removeLast()
-                }) {
-                    Image(systemName: "chevron.left")
-                        .bold()
-                }
-                //            }
                 
-                //            ToolbarItem(placement: .principal) {
-                UserCardView(user: otherUser!, width: 40)
-                    .padding(5)
-                //            }
+            } // scrollview
+            .onDisappear {
+                hasLoadMessage = false
+                webSocketManager.messages = []
             }
-            .padding(.horizontal, 4)
-//            .background(Color.gray.mix(with: .pin, by: 0.2))
-            .background(Color.white)
+            .defaultScrollAnchor(.bottom)
+            .frame(width: 400)
+            .toolbar(.hidden, for: .tabBar)
+            .navigationBarBackButtonHidden()
+            .safeAreaInset(edge: .bottom, alignment: .center) {
+                
+                VStack {
+                    HStack{
+                        TextField("Message", text: $webSocketManager.newMessage, axis: .vertical)
+                            .lineLimit(5)
+                            .padding(.vertical, 7)
+                            .padding(.leading, 20)
+                            .padding(.bottom, 7)
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 20)
+                                    .stroke(Color.gray, lineWidth: 1)
+                            }
+                        
+                        
+                        Button {
+                            webSocketManager.sendMessage(chatId: chatId)
+                            webSocketManager.newMessage = ""
+                        } label: {
+                            Image(systemName: "triangle.circle.fill")
+                                .resizable()
+                                .frame(width: 50, height: 50)
+                                .rotationEffect(.degrees(90))
+                                .foregroundStyle(Color.primaryColor)
+                        }// label
+                    } // hstack
+                    .padding(.horizontal, 5)
+                    .padding(.top, 5)
+                }
+                .background(Color.secondaryColor)
+            } //safeAreaInset
             
-            
-            
+            .safeAreaInset(edge: .top) {
+                //            ToolbarItem(placement: .topBarLeading){
+                HStack{
+                    Button(action: {
+                        path.removeLast()
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .bold()
+                    }
+                    //            }
+                    
+                    //            ToolbarItem(placement: .principal) {
+                    UserCardView(user: otherUser!, width: 40)
+                        .padding(5)
+                    //            }
+                }
+                .padding(.horizontal, 4)
+                //            .background(Color.gray.mix(with: .pin, by: 0.2))
+                .background(Color.secondaryColor)
+                
+                
+                
+            }
         }
-        
+
     }
 }
 
 #Preview {
-    ChatDetailView(chatId: "670903f421efb36287072a9d", otherUser: Profile(id: "12345", email: "sdg", profileName: "sss", profilePicUrl: ""), path: .constant(NavigationPath()))
+    ChatDetailView(chatId: "670903f421efb36287072a9d", otherUser: Profile(id: "670b7f43f8e2c3c770fd2383", email: "sdg", profileName: "sss", profilePicUrl: ""), path: .constant(NavigationPath()))
         .environmentObject(LoginViewModel())
         .environmentObject(WebSocketManager())
 }
@@ -181,7 +187,7 @@ struct ChatBubble: View {
                 .padding(.trailing, 3)
             }
             .frame(minWidth: 50, maxWidth: 250)
-            .background(Color.cyan)
+            .background((message.senderId == userId) ? Color.chatBubblesSent : Color.chatBubblesReceived)
             .clipShape(RoundedRectangle(cornerRadius: 5))
             .padding(.top, (message.senderId == previousMessage?.senderId) ? 0: 5)
             

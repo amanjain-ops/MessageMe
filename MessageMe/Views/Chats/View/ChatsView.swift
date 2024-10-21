@@ -66,6 +66,7 @@ struct ChatsView: View {
                         
                     }
                 }
+                .background(Color.secondaryColor)
                 .navigationTitle("MessageME")
                 .navigationDestination(for: Chats.self) { chat in
                     ChatDetailView(chatId: chat.id, otherUser: chat.otherParticipantName, path: $path)
@@ -79,6 +80,17 @@ struct ChatsView: View {
                         ChatDetailView(chatId: chatId, otherUser: user, path: $path)
                     }
                     
+                }
+                .safeAreaInset(edge: .top, alignment: .leading) {
+                    HStack{
+                        Text("MessageMe")
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .foregroundStyle(Color.primaryColor)
+                        Spacer()
+                    }
+                    .padding()
+                    .background(Color.secondaryColor)
                 }
                 
             }
@@ -113,9 +125,11 @@ struct ChatCardView: View {
                 Text(chat.otherParticipantName?.profileName ?? "")
                     .fontWeight(.semibold)
                     .lineLimit(1)
+                    .foregroundStyle(Color.textColor)
                 
                 Text(chat.lastMessage?.message ?? "")
                     .lineLimit(1)
+                    .foregroundStyle(Color("secondaryTextColor"))
             }
             Spacer()
             // time and msg count
@@ -142,7 +156,7 @@ struct ChatCardView: View {
                     .fontWeight(.bold)
                     .frame(width: 28, height: 28)
                     .foregroundStyle(.white)
-                    .background(.accent)
+                    .background(Color.primaryColor)
                     .clipShape(Circle())
             }
         }
@@ -155,7 +169,7 @@ struct FloatingButton: View {
     var body: some View {
         ZStack{
             Circle()
-                .fill(.accent)
+                .fill(Color.primaryColor)
                 .frame(width: 60, height: 60)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 20)

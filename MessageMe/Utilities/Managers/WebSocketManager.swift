@@ -18,6 +18,7 @@ class WebSocketManager: ObservableObject {
     private var loginViewModel: LoginViewModel?
     @Published var chatCreatedResponse: Chats?
     @Published var chatss: [Chats] = []
+    
     // Initialize without any parameters
     init() {
     }
@@ -99,9 +100,10 @@ class WebSocketManager: ObservableObject {
                     let response = try decoder.decode(Chats.self, from: jsonData)
                     
                     print("Response:", response)
-                    
+                    self.chatss = []
                     DispatchQueue.main.async {
-                        self.updateChatMessages(response: response)
+//                        self.updateChatMessages(response: response)
+                        self.chatss.append(response)
 //                        print("fter chat append: ", self.chatss)
                     }
                 } catch {
@@ -173,27 +175,27 @@ class WebSocketManager: ObservableObject {
     }
     
     
-    func updateChatMessages(response: Chats) {
-        // Find the chat by chatId and append the message to the correct chat
-        
-        print("existing value in chats: ", self.chatss)
-        print("updating msgs")
-        
-        if let index = self.chatss.firstIndex(where: { $0.id == response.id }) {
-//            print("response id: \(response.id), chat id: \(self.chatss[index].id)")
-//            DispatchQueue.main.async {
-                self.chatss[index].lastMessage = response.lastMessage
-//            }
-            
-        }
-        else {
-            print("else matters")
-//            DispatchQueue.main.async {
-                self.chatss.append(response)
-//                print("cjjj: ", self.chatss)
-//            }
-        }
-    }
+//    func updateChatMessages(response: Chats) {
+//        // Find the chat by chatId and append the message to the correct chat
+//        
+//        print("existing value in chats: ", self.chatss)
+//        print("updating msgs")
+//        
+//        if let index = self.chatss.firstIndex(where: { $0.id == response.id }) {
+////            print("response id: \(response.id), chat id: \(self.chatss[index].id)")
+////            DispatchQueue.main.async {
+//                self.chatss[index].lastMessage = response.lastMessage
+////            }
+//            
+//        }
+//        else {
+//            print("else matters")
+////            DispatchQueue.main.async {
+//                self.chatss.append(response)
+////                print("cjjj: ", self.chatss)
+////            }
+//        }
+//    }
     
     
     func chatCreate(recipentId: String) {
